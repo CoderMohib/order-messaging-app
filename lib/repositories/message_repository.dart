@@ -4,98 +4,49 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/message_model.dart';
 
 class MessageRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  
-  static const String _collectionName = 'messages';
-  static const String _orderTakerId = 'order_taker';
+  final FirebaseFirestore _f = FirebaseFirestore.instance;
+  final FirebaseAuth _a = FirebaseAuth.instance;
+  static const String _c = 'messages';
+  static const String _o = 'order_taker';
 
-  // Send a message to Order Taker
   Future<void> sendMessage(String text) async {
-    final currentUser = _auth.currentUser;
-    if (currentUser == null) throw Exception('User not authenticated');
+    final u = _a.currentUser;
+    if (u == null) throw Exception('User not authenticated');
     if (text.trim().isEmpty) throw Exception('Message cannot be empty');
-
-    final message = Message(
-      id: '',
-      text: text.trim(),
-      senderId: currentUser.uid,
-      receiverId: _orderTakerId,
-      senderName: currentUser.email ?? currentUser.uid,
-      timestamp: DateTime.now(),
-    );
-
-    await _firestore.collection(_collectionName).add(message.toFirestore());
+    final m = Message(id: '', text: text.trim(), senderId: u.uid, receiverId: _o, senderName: u.email ?? u.uid, timestamp: DateTime.now());
+    await _f.collection(_c).add(m.toFirestore());
   }
 
-  // Get real-time stream of messages
   Stream<List<Message>> getMessagesStream() {
-    final currentUser = _auth.currentUser;
-    if (currentUser == null) return Stream.value([]);
-
-    // Get sent messages (user -> Order Taker)
-    final sentStream = _firestore
-        .collection(_collectionName)
-        .where('senderId', isEqualTo: currentUser.uid)
-        .where('receiverId', isEqualTo: _orderTakerId)
-        .orderBy('timestamp', descending: false)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => Message.fromFirestore(doc)).toList());
-
-    // Get received messages (Order Taker -> user)
-    final receivedStream = _firestore
-        .collection(_collectionName)
-        .where('senderId', isEqualTo: _orderTakerId)
-        .where('receiverId', isEqualTo: currentUser.uid)
-        .orderBy('timestamp', descending: false)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => Message.fromFirestore(doc)).toList());
-
-    // Combine both streams
-    return _combineStreams(sentStream, receivedStream);
+    final u = _a.currentUser;
+    if (u == null) return Stream.value([]);
+    final s = _f.collection(_c).where('senderId', isEqualTo: u.uid).where('receiverId', isEqualTo: _o).orderBy('timestamp', descending: false).snapshots().map((snapshot) => snapshot.docs.map((doc) => Message.fromFirestore(doc)).toList());
+    final r = _f.collection(_c).where('senderId', isEqualTo: _o).where('receiverId', isEqualTo: u.uid).orderBy('timestamp', descending: false).snapshots().map((snapshot) => snapshot.docs.map((doc) => Message.fromFirestore(doc)).toList());
+    return _combine(s, r);
   }
 
-  // Simple helper to combine two streams
-  Stream<List<Message>> _combineStreams(
-    Stream<List<Message>> sent,
-    Stream<List<Message>> received,
-  ) {
-    final controller = StreamController<List<Message>>.broadcast();
-    List<Message> sentList = [];
-    List<Message> receivedList = [];
-
-    // Listen to sent messages
-    final sentSub = sent.listen((messages) {
-      sentList = messages;
-      _emitCombined(controller, sentList, receivedList);
+  Stream<List<Message>> _combine(Stream<List<Message>> s, Stream<List<Message>> r) {
+    final c = StreamController<List<Message>>.broadcast();
+    List<Message> sl = [];
+    List<Message> rl = [];
+    s.listen((m) {
+      sl = m;
+      _emit(c, sl, rl);
     });
-
-    // Listen to received messages
-    final receivedSub = received.listen((messages) {
-      receivedList = messages;
-      _emitCombined(controller, sentList, receivedList);
+    r.listen((m) {
+      rl = m;
+      _emit(c, sl, rl);
     });
-
-    // Clean up when stream is cancelled
-    controller.onCancel = () {
-      sentSub.cancel();
-      receivedSub.cancel();
-      controller.close();
+    c.onCancel = () {
+      c.close();
     };
-
-    return controller.stream;
+    return c.stream;
   }
 
-  // Helper to merge and emit combined messages
-  void _emitCombined(
-    StreamController<List<Message>> controller,
-    List<Message> sent,
-    List<Message> received,
-  ) {
-    if (controller.isClosed) return;
-    
-    final all = <Message>[...sent, ...received];
+  void _emit(StreamController<List<Message>> c, List<Message> sl, List<Message> rl) {
+    if (c.isClosed) return;
+    final all = <Message>[...sl, ...rl];
     all.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-    controller.add(all);
+    c.add(all);
   }
 }
