@@ -6,67 +6,33 @@ import 'message_event.dart';
 import 'message_state.dart';
 
 class MessageBloc extends Bloc<MessageEvent, MessageState> {
-  final MessageRepository _messageRepository;
+  final MessageRepository _r;
 
-  MessageBloc(this._messageRepository) : super(const MessageInitial()) {
-    on<LoadMessages>(_onLoadMessages);
-    on<SendMessage>(_onSendMessage);
+  MessageBloc(this._r) : super(const MessageInitial()) {
+    on<LoadMessages>(_onLoad);
+    on<SendMessage>(_onSend);
   }
 
-  Future<void> _onLoadMessages(
-    LoadMessages event,
-    Emitter<MessageState> emit,
-  ) async {
-    try {
-      emit(const MessageLoading());
+  Future<void> _onLoad(LoadMessages e, Emitter<MessageState> emit) async {
+    emit(const MessageLoading());
+    await emit.forEach<List<Message>>(_r.getMessagesStream(), onData: (m) => MessageLoaded(m), onError: (err, _) => MessageError('Failed to load: ${err.toString()}'));
+  }
 
-      // Listen to the stream and emit states as messages come in
-      await emit.forEach<List<Message>>(
-        _messageRepository.getMessagesStream(),
-        onData: (messages) {
-          return MessageLoaded(messages);
-        },
-        onError: (error, stackTrace) {
-          return MessageError('Failed to load messages: ${error.toString()}');
-        },
-      );
-    } catch (e) {
-      emit(MessageError('Failed to load messages: ${e.toString()}'));
+  Future<void> _onSend(SendMessage e, Emitter<MessageState> emit) async {
+    if (e.text.trim().isEmpty) {
+      emit(const MessageError('Message cannot be empty'));
+      return;
     }
-  }
-
-  Future<void> _onSendMessage(
-    SendMessage event,
-    Emitter<MessageState> emit,
-  ) async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      emit(const MessageError('User not authenticated'));
+      return;
+    }
     try {
-      // Validate message
-      if (event.text.trim().isEmpty) {
-        emit(MessageError('Message cannot be empty'));
-        return;
-      }
-
-      // Check if user is authenticated
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        emit(const MessageError('User not authenticated'));
-        return;
-      }
-
-      // Get current messages if state is MessageLoaded
-      final currentMessages = state is MessageLoaded
-          ? (state as MessageLoaded).messages
-          : <Message>[];
-
-      emit(MessageSending(currentMessages));
-
-      // Send message
-      await _messageRepository.sendMessage(event.text);
-
-      // State will be updated automatically through the stream
-    } catch (e) {
-      emit(MessageError('Failed to send message: ${e.toString()}'));
+      final m = state is MessageLoaded ? (state as MessageLoaded).messages : <Message>[];
+      emit(MessageSending(m));
+      await _r.sendMessage(e.text);
+    } catch (err) {
+      emit(MessageError('Failed to send: ${err.toString()}'));
     }
   }
 }
-

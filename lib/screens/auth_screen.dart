@@ -42,25 +42,17 @@ class _AuthScreenState extends State<AuthScreen> {
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message ?? 'Authentication failed'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.message ?? 'Authentication failed'), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -79,16 +71,11 @@ class _AuthScreenState extends State<AuthScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.chat_bubble_outline,
-                  size: 80,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                Icon(Icons.chat_bubble_outline, size: 80, 
+                    color: Theme.of(context).colorScheme.primary),
                 const SizedBox(height: 16),
-                Text(
-                  _isLogin ? 'Login to Chat' : 'Create Account',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
+                Text(_isLogin ? 'Login to Chat' : 'Create Account',
+                    style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailController,
@@ -99,12 +86,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter valid email';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter email';
+                    if (!value.contains('@')) return 'Please enter valid email';
                     return null;
                   },
                 ),
@@ -118,12 +101,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   obscureText: true,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter password';
+                    if (value.length < 6) return 'Password must be at least 6 characters';
                     return null;
                   },
                 ),
@@ -132,27 +111,19 @@ class _AuthScreenState extends State<AuthScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleAuth,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
+                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                     child: _isLoading
                         ? const SizedBox(
-                            height: 20,
-                            width: 20,
+                            height: 20, width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Text(
-                            _isLogin ? 'Login' : 'Sign Up',
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                        : Text(_isLogin ? 'Login' : 'Sign Up', style: const TextStyle(fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
-                  onPressed: () {
-                    setState(() => _isLogin = !_isLogin);
-                  },
-                  child: Text(_isLogin
+                  onPressed: () => setState(() => _isLogin = !_isLogin),
+                  child: Text(_isLogin 
                       ? 'Don\'t have an account? Sign Up'
                       : 'Already have an account? Login'),
                 ),
@@ -164,4 +135,3 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 }
-
