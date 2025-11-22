@@ -28,7 +28,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
       return;
     }
     try {
-      final m = state is MessageLoaded ? (state as MessageLoaded).messages : <Message>[];
+      final m = state is MessageLoaded ? (state as MessageLoaded).m : <Message>[];
       emit(MessageSending(m));
       await _r.sendMessage(e.text);
     } catch (err) {

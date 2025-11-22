@@ -44,13 +44,13 @@ class _MessagingScreenState extends State<MessagingScreen> {
       appBar: AppBar(title: const Text('Messages - Order Taker')),
       body: BlocConsumer<MessageBloc, MessageState>(
         listener: (c, s) {
-          if (s is MessageError) ScaffoldMessenger.of(c).showSnackBar(SnackBar(content: Text(s.error)));
+          if (s is MessageError) ScaffoldMessenger.of(c).showSnackBar(SnackBar(content: Text(s.e)));
           if (s is MessageLoaded && _s.hasClients) Future.delayed(const Duration(milliseconds: 100), () => _s.jumpTo(_s.position.maxScrollExtent));
         },
         builder: (c, s) {
           if (s is MessageInitial || s is MessageLoading) return const Center(child: CircularProgressIndicator());
-          if (s is MessageError && s is! MessageLoaded) return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.error_outline, size: 64), const SizedBox(height: 16), Text(s.error), const SizedBox(height: 16), ElevatedButton(onPressed: () => c.read<MessageBloc>().add(const LoadMessages()), child: const Text('Retry'))]));
-          final m = s is MessageLoaded ? s.messages : s is MessageSending ? s.messages : <Message>[];
+          if (s is MessageError && s is! MessageLoaded) return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.error_outline, size: 64), const SizedBox(height: 16), Text(s.e), const SizedBox(height: 16), ElevatedButton(onPressed: () => c.read<MessageBloc>().add(const LoadMessages()), child: const Text('Retry'))]));
+          final m = s is MessageLoaded ? s.m : s is MessageSending ? s.m : <Message>[];
           return Column(children: [
             Expanded(child: m.isEmpty ? const Center(child: Text('No messages yet. Start a conversation!', style: TextStyle(fontSize: 16))) : ListView.builder(controller: _s, padding: const EdgeInsets.all(16), itemCount: m.length, itemBuilder: (c, i) {
               final msg = m[i];

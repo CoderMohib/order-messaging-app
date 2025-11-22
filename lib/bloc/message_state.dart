@@ -3,7 +3,6 @@ import '../models/message_model.dart';
 
 abstract class MessageState extends Equatable {
   const MessageState();
-
   @override
   List<Object> get props => [];
 }
@@ -17,29 +16,22 @@ class MessageLoading extends MessageState {
 }
 
 class MessageLoaded extends MessageState {
-  final List<Message> messages;
-
-  const MessageLoaded(this.messages);
-
+  final List<Message> m;
+  const MessageLoaded(this.m);
   @override
-  List<Object> get props => [messages];
+  List<Object> get props => [m];
 }
 
 class MessageError extends MessageState {
-  final String error;
-
-  const MessageError(this.error);
-
+  final String e;
+  const MessageError(this.e);
   @override
-  List<Object> get props => [error];
+  List<Object> get props => [e];
 }
 
 class MessageSending extends MessageState {
-  final List<Message> messages;
-
-  const MessageSending(this.messages);
-
+  final List<Message> m;
+  const MessageSending(this.m);
   @override
-  List<Object> get props => [messages];
+  List<Object> get props => [m];
 }
-

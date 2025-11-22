@@ -9,40 +9,17 @@ class Message extends Equatable {
   final String senderName;
   final DateTime timestamp;
 
-  const Message({
-    required this.id,
-    required this.text,
-    required this.senderId,
-    required this.receiverId,
-    required this.senderName,
-    required this.timestamp,
-  });
+  const Message({required this.id, required this.text, required this.senderId, required this.receiverId, required this.senderName, required this.timestamp});
 
-  // Convert Firestore document to Message object
   factory Message.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return Message(
-      id: doc.id,
-      text: data['text'] ?? '',
-      senderId: data['senderId'] ?? '',
-      receiverId: data['receiverId'] ?? '',
-      senderName: data['senderName'] ?? '',
-      timestamp: (data['timestamp'] as Timestamp).toDate(),
-    );
+    final d = doc.data() as Map<String, dynamic>;
+    return Message(id: doc.id, text: d['text'] ?? '', senderId: d['senderId'] ?? '', receiverId: d['receiverId'] ?? '', senderName: d['senderName'] ?? '', timestamp: (d['timestamp'] as Timestamp).toDate());
   }
 
-  // Convert Message object to Firestore document
   Map<String, dynamic> toFirestore() {
-    return {
-      'text': text,
-      'senderId': senderId,
-      'receiverId': receiverId,
-      'senderName': senderName,
-      'timestamp': Timestamp.fromDate(timestamp),
-    };
+    return {'text': text, 'senderId': senderId, 'receiverId': receiverId, 'senderName': senderName, 'timestamp': Timestamp.fromDate(timestamp)};
   }
 
   @override
   List<Object> get props => [id, text, senderId, receiverId, senderName, timestamp];
 }
-
