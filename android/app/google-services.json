@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "542413758094",
+    "project_id": "order-messaging-app",
+    "storage_bucket": "order-messaging-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:542413758094:android:8832c41a4d465aa9d833df",
+        "android_client_info": {
+          "package_name": "com.example.order_app_messaging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_zfPq4csZVG99AlBbKMz5k-HVJvWOHHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
